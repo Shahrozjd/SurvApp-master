@@ -1,3 +1,5 @@
+import 'package:surv/screens/CalendarwithService.dart';
+
 import './screens/categoryScreen.dart';
 import './screens/calendar.dart';
 import './screens/auth_screen.dart';
@@ -94,6 +96,7 @@ class MyApp extends StatelessWidget {
             CategoriesScreen.routeName: (ctx) => CategoriesScreen(),
             DetailsScreen.routeName: (ctx) => DetailsScreen(),
             Calendar.routeName: (ctx) => Calendar(),
+            CalendarwithService.routeName:(ctx) =>CalendarwithService(),
           })
       ),
     );

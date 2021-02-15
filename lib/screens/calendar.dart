@@ -17,6 +17,9 @@ import './edit_product_screen.dart';
 
 class Calendar extends StatefulWidget {
   static const routeName = '/calendar';
+  String docid;
+  String title;
+  Calendar({this.docid,this.title});
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -51,36 +54,44 @@ class _CalendarState extends State<Calendar> {
       ),
       drawer: AppDrawer(),
       body: Container(
-        padding: EdgeInsets.only(top: 50),
-        child: DatePicker(
-          DateTime.now()
-              .subtract(new Duration(days: DateTime.now().weekday - 1)),
+        padding: EdgeInsets.only(top: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(padding: EdgeInsets.all(15),child: Text('Choose Daily Timings',style: TextStyle(fontSize: 25),),),
+            SizedBox(height: 5,),
+            Padding(padding: EdgeInsets.all(15),child: Text(widget.title,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),),
+            DatePicker(
+              DateTime.now()
+                  .subtract(new Duration(days: DateTime.now().weekday - 1)),
 
-          width: 60,
-          height: 80,
-          controller: _controller,
-          // initialSelectedDate: DateTime.now(),
-          initialSelectedDate: null,
-          selectionColor: Colors.black,
-          selectedTextColor: Colors.white,
+              width: 60,
+              height: 80,
+              controller: _controller,
+              // initialSelectedDate: DateTime.now(),
+              initialSelectedDate: null,
+              selectionColor: Colors.black,
+              selectedTextColor: Colors.white,
 
-          // inactiveDates: [
-          //   DateTime.now().add(Duration(days: 1)),
-          //   DateTime.now().add(Duration(days: 4)),
-          //   DateTime.now().add(Duration(days: 7))
-          // ],
-          onDateChange: (date) {
-            // New date selected
-            setState(() {
-              String currdate = date.day.toString() +
-                  "-" +
-                  date.month.toString() +
-                  "-" +
-                  date.year.toString();
-              print(currdate);
-              showDialog(currdate);
-            });
-          },
+              // inactiveDates: [
+              //   DateTime.now().add(Duration(days: 1)),
+              //   DateTime.now().add(Duration(days: 4)),
+              //   DateTime.now().add(Duration(days: 7))
+              // ],
+              onDateChange: (date) {
+                // New date selected
+                setState(() {
+                  String currdate = date.day.toString() +
+                      "-" +
+                      date.month.toString() +
+                      "-" +
+                      date.year.toString();
+                  print(currdate);
+                  showDialog(currdate);
+                });
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -89,18 +100,19 @@ class _CalendarState extends State<Calendar> {
   void showDialog(String date) async {
     List<String> timings = [];
     await FirebaseFirestore.instance
-        .collection("calendar")
-        .doc(date)
-        .get()
-        .then<dynamic>((DocumentSnapshot snapshot) async {
-      setState(() {
-        if (snapshot.exists) {
-          Map<String, dynamic> data = snapshot.data();
-          timings = List.from(data['timings']);
-          print(timings);
-        }
+        .collection('servicescalendar')
+        .doc(widget.docid).collection("calendar")
+          .doc(date)
+          .get()
+          .then<dynamic>((DocumentSnapshot snapshot) async {
+        setState(() {
+          if (snapshot.exists) {
+            Map<String, dynamic> data = snapshot.data();
+            timings = List.from(data['timings']);
+            print(timings);
+          }
+        });
       });
-    });
     showGeneralDialog(
       barrierLabel: "Barrier",
       barrierDismissible: true,
@@ -146,15 +158,15 @@ class _CalendarState extends State<Calendar> {
                                       width: 5,
                                     ),
                                     InkWell(
-                                      onTap: (){
-
-                                        selectTimeFrom(context);
-                                      },
-                                      splashColor: Colors.black.withOpacity(0.2),
+                                        onTap: () {
+                                          selectTimeFrom(context);
+                                        },
+                                        splashColor:
+                                            Colors.black.withOpacity(0.2),
                                         child: Text(
-                                      "Select Time",
-                                      style: TextStyle(fontSize: 18),
-                                    ))
+                                          "Select Time",
+                                          style: TextStyle(fontSize: 18),
+                                        ))
                                   ],
                                 )),
                                 SizedBox(
@@ -204,14 +216,16 @@ class _CalendarState extends State<Calendar> {
                                     child: Row(
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.only(left:3.0),
+                                          padding:
+                                              const EdgeInsets.only(left: 3.0),
                                           child: InkWell(
-                                              splashColor: Colors.white.withOpacity(0.3),
+                                              splashColor:
+                                                  Colors.white.withOpacity(0.3),
                                               child: Icon(Icons.cancel),
                                               onTap: () {
                                                 setState(() {
-                                                  timings.remove(
-                                                      timings[index].toString());
+                                                  timings.remove(timings[index]
+                                                      .toString());
                                                 });
                                               }),
                                         ),
@@ -269,7 +283,12 @@ class _CalendarState extends State<Calendar> {
   }
 
   Future<void> addtofirestore({String day, List<String> timings}) async {
-    await FirebaseFirestore.instance.collection('calendar').doc(day).set({
+    await FirebaseFirestore.instance
+        .collection('servicescalendar')
+        .doc(widget.docid)
+        .collection('calendar')
+        .doc(day)
+        .set({
       'timings': timings.toList(),
     }).then((value) {
       print('Data saved');
