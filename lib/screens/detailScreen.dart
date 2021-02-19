@@ -72,6 +72,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       listen: false,
     ).findById(productId);
     final authData = Provider.of<Auth>(context, listen: false);
+    print('Service id: '+loadedProduct.id.toString());
     return SafeArea(
       child: Scaffold(
         //    floatingActionButton: FloatingActionButton(
@@ -343,6 +344,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   date.year.toString();
 
                               await FirebaseFirestore.instance
+                                  .collection('servicescalendar')
+                                  .doc(loadedProduct.id.toString())
                                   .collection("calendar")
                                   .doc(currdate)
                                   .get()
@@ -431,8 +434,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           onPressed: () {
                             print(currdate);
                             print(aptimings);
+                            updatetimingstofirestore(day: currdate,timings: aptimings,docid: loadedProduct.id.toString());
 
-                            updatetimingstofirestore(day: currdate,timings: aptimings);
                             // clientDate = _selectedValue.toString();
                             // clientTime = _valueSaved4;
                             //
@@ -455,8 +458,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
-  Future<void> updatetimingstofirestore({String day, List<String> timings}) async {
-    await FirebaseFirestore.instance.collection('calendar').doc(day).update({
+  Future<void> updatetimingstofirestore({String docid, String day, List<String> timings}) async {
+    await FirebaseFirestore.instance
+        .collection('servicescalendar')
+        .doc(docid)
+        .collection('calendar')
+        .doc(day)
+        .update({
       'timings': timings.toList(),
     }).then((value) {
       print('Data saved');

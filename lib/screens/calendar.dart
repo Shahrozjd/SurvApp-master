@@ -37,7 +37,7 @@ class _CalendarState extends State<Calendar> {
   String _valueToValidate4 = '';
   String _valueSaved4 = '';
   String _valueChanged4 = '';
-  String shFromTime;
+
 
   @override
   void initState() {
@@ -97,6 +97,11 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
+
+  Future<String> selectTimeFrom(BuildContext context) async {
+
+  }
+
   void showDialog(String date) async {
     List<String> timings = [];
     await FirebaseFirestore.instance
@@ -120,7 +125,7 @@ class _CalendarState extends State<Calendar> {
       transitionDuration: Duration(milliseconds: 500),
       context: context,
       pageBuilder: (_, __, ___) {
-        String time;
+        String shFromTime;
         return StatefulBuilder(
           builder: (context, setState) {
             return Align(
@@ -159,12 +164,28 @@ class _CalendarState extends State<Calendar> {
                                     ),
                                     InkWell(
                                         onTap: () {
-                                          selectTimeFrom(context);
+                                          setState(() async {
+                                            TimeOfDay selectedTime = await showTimePicker(
+                                              context: context,
+                                              initialTime: TimeOfDay.now(),
+                                            );
+
+                                            MaterialLocalizations localizations = MaterialLocalizations.of(context);
+                                            String formattedTime = localizations.formatTimeOfDay(selectedTime,
+                                                alwaysUse24HourFormat: false);
+
+                                            if (formattedTime != null) {
+                                              setState(() {
+                                                shFromTime = formattedTime;
+                                              });
+
+                                            }
+                                          });
                                         },
                                         splashColor:
                                             Colors.black.withOpacity(0.2),
                                         child: Text(
-                                          "Select Time",
+                                          shFromTime==null?'Select Time':shFromTime,
                                           style: TextStyle(fontSize: 18),
                                         ))
                                   ],
@@ -264,23 +285,7 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
-  Future<Null> selectTimeFrom(BuildContext context) async {
-    TimeOfDay selectedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
 
-    MaterialLocalizations localizations = MaterialLocalizations.of(context);
-    String formattedTime = localizations.formatTimeOfDay(selectedTime,
-        alwaysUse24HourFormat: false);
-
-    if (formattedTime != null) {
-      setState(() {
-        shFromTime = formattedTime;
-      });
-      print(shFromTime);
-    }
-  }
 
   Future<void> addtofirestore({String day, List<String> timings}) async {
     await FirebaseFirestore.instance
